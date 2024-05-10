@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/time_display"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:text="@string/_00_00_00"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"/>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/start_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/stop_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/stop"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/reset_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reset"/>
+    </LinearLayout>
+
+</LinearLayout>
+
+package com.example.stopwatch;
+
+import android.os.Bundle;
+import android.os.Handler;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.Locale;
+
+public class MainActivity extends AppCompatActivity {
+
+    private TextView timeDisplay;
+    private Button startButton;
+    private Button stopButton;
+    private long startTime = 0L;
+    private final Handler handler = new Handler();
+    private long timeInMillis = 0L;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        timeDisplay = findViewById(R.id.time_display);
+        startButton = findViewById(R.id.start_button);
+        stopButton = findViewById(R.id.stop_button);
+        Button resetButton = findViewById(R.id.reset_button);
+
+        startButton.setOnClickListener(v -> {
+            startTime = System.currentTimeMillis();
+            handler.postDelayed(runnable, 0);
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+        });
+
+        stopButton.setOnClickListener(v -> {
+            handler.removeCallbacks(runnable);
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+        });
+
+        resetButton.setOnClickListener(v -> {
+            handler.removeCallbacks(runnable);
+            startButton.setEnabled(true);
+            stopButton.setEnabled(true);
+            timeInMillis = 0L;
+            timeDisplay.setText(R.string._00_00_00_);
+        });
+    }
+
+    private final Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            timeInMillis = System.currentTimeMillis() - startTime;
+            int seconds = (int) (timeInMillis / 1000);
+            int minutes = seconds / 60;
+            int hours = minutes / 60;
+
+            seconds %= 60;
+            minutes %= 60;
+
+            String time = String.format(Locale.getDefault(),"%02d:%02d:%02d", hours, minutes, seconds);
+            timeDisplay.setText(time);
+            handler.postDelayed(this, 1000);
+        }
+    };
+}
